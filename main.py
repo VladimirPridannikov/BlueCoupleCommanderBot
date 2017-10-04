@@ -1,21 +1,22 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import telebot
+import sqlite3
 from telebot import types
 
 admin_list = [391545947, 64000151, 121485043, 339824315]
-token = '462200530:AAE-0tbERzSSKg_lsNz_x-Gvlw9ItITejvY'
+token = '462200530:AAEdZ9CXigLnRVflYDIN8v8qfjry5D1UCcg'
 bot = telebot.TeleBot(token)
+CWBotID = 326394943
 
 
 @bot.inline_handler(lambda query: query.query == 'Защита')
 def query_text(inline_query):
-    if inline_query == 'Защита':
-        try:
-            r = types.InlineQueryResultArticle('1', 'Защита', types.InputTextMessageContent('🛡 Защита'))
-            bot.answer_inline_query(inline_query.id, [r])
-        except Exception as e:
-            print(e)
+    try:
+        r = types.InlineQueryResultArticle('1', 'Защита', types.InputTextMessageContent('🛡 Защита'))
+        bot.answer_inline_query(inline_query.id, [r])
+    except Exception as e:
+        print(e)
 
 
 @bot.inline_handler(lambda query: query.query == '⚫️ Чёрный')
@@ -113,45 +114,87 @@ def commands(message):
     bot.pin_chat_message(message.chat.id, send.message_id)
 
 
+@bot.message_handler(content_types=['text'])
+def messages(message):
+    if message.forward_from is not None:
+        if message.forward_from.id == 326394943:
+            if message.text.split('\n')[2][0] == '🔵' and 'Снаряжение' in message.text:
+                if message.date - message.forward_date < 16:
+                    data_base = sqlite3.connect('BB')
+                    c = data_base.cursor()
+                    c.execute('SELECT tgid FROM accounts')
+                    temp = c.fetchone()
+                    c.close()
+                    data_base.close()
+                    if message.from_user.id in temp:
+                        pass
+                    else:
+                        bot.send_message(message.from_user.id, 'Хм.. тебя нет в базе данных, сейчас я тебя '
+                                                               'зарегистрирую...')
+                        strings = message.text.split('\n', maxsplit=-1)
+                        if strings[4][0] == '🛠':
+                            user_info = ['tgid', 'name', 'fl', 'wl', 'money', 'nhealth', 'mhealth', 'damage', 'agility',
+                                         'agility', 'agility', 'agility']
+                            user_info[0] = message.from_user.id
+                            user_info[1] = strings[2].split('🔵', maxsplit=1)[1].split(' ')[0]
+                            user_info[2] = strings[3].split(': ')[1].split(' ')[0]
+                            user_info[3] = strings[4].split(': ')[1].split(' ')[0]
+                            user_info[4] = strings[5].split(': ')[1].split(' ')[0]
+                            user_info[5] = strings[6].split(' / ')[0].split('❤️ Здоровье: ')[1]
+                            user_info[6] = strings[6].split(' / ')[1].split(' ')[0]
+
+                            user_info[7] = strings[7].split('💥 Атака: ')[1].split(' ')[0]
+                            if '+' in user_info[7]:
+                                user_info[7] = int(user_info[7].split('+')[0]) + int(user_info[7].split('+')[1])
+
+                            user_info[8] = strings[8].split('🛡 Защита: ')[1].split(' ')[0]
+                            if '+' in user_info[8]:
+                                user_info[8] = int(user_info[8].split('+')[0]) + int(user_info[8].split('+')[1])
+
+                            user_info[9] = strings[9].split('🦎 Ловкость: ')[1].split(' ')[0]
+                            if '+' in user_info[9]:
+                                user_info[9] = int(user_info[9].split('+')[0]) + int(user_info[9].split('+')[1])
+
+                            user_info[10] = strings[10].split(' / ')[0].split('🔋 Выносливость: ')[1]
+                            user_info[11] = strings[10].split(' / ')[1].split(' ')[0]
+                        else:
+                            user_info = ['tgid', 'name', 'fl', 'wl', 'money', 'nhealth', 'mhealth', 'damage', 'agility',
+                                         'agility', 'agility', 'agility']
+                            user_info[0] = message.from_user.id
+                            user_info[1] = strings[2].split('🔵', maxsplit=1)[1].split(' ')[0]
+                            user_info[2] = strings[3].split(': ')[1].split(' ')[0]
+                            user_info[3] = 'NULL'
+                            user_info[4] = strings[4].split(': ')[1].split(' ')[0]
+                            user_info[5] = strings[5].split(' / ')[0].split('❤️ Здоровье: ')[1]
+                            user_info[6] = strings[5].split(' / ')[1].split(' ')[0]
+                            user_info[7] = strings[6].split('💥 Атака: ')[1].split(' ')[0]
+                            if '+' in user_info[7]:
+                                user_info[7] = int(user_info[7].split('+')[0]) + int(user_info[7].split('+')[1])
+                            user_info[8] = strings[7].split('🛡 Защита: ')[1].split(' ')[0]
+                            if '+' in user_info[8]:
+                                user_info[8] = int(user_info[8].split('+')[0]) + int(user_info[8].split('+')[1])
+                            user_info[9] = strings[8].split('🦎 Ловкость: ')[1].split(' ')[0]
+                            if '+' in user_info[9]:
+                                user_info[9] = int(user_info[9].split('+')[0]) + int(user_info[9].split('+')[1])
+                            user_info[10] = strings[9].split(' / ')[0].split('🔋 Выносливость: ')[1]
+                            user_info[11] = strings[9].split(' / ')[1].split(' ')[0]
+                        data_base = sqlite3.connect('BB')
+                        c = data_base.cursor()
+                        c.execute("INSERT INTO accounts (tgid,name,fl,wl,money,nhealth, mhealth,damage, defense, "
+                                  "agility, nstamina, mstamina) VALUES ({},'{}',{},{},{},{},{},{},{},{},{},"
+                                  "{})".format(user_info[0], user_info[1], user_info[2], user_info[3], user_info[4],
+                                               user_info[5], user_info[6], user_info[7], user_info[8], user_info[9],
+                                               user_info[10], user_info[11]))
+                        data_base.commit()
+                        c.close()
+                        data_base.close()
+                else:
+                    bot.send_message(message.from_user.id, 'Ты отправил мне слишком старый форвард!')
+            else:
+                bot.send_message(message.from_user.id, 'Извини, я пока принимаю только профили, но даже если это и '
+                                                       'профиль, то ты скорее всего не из 🔵Синего квартала')
+        else:
+            bot.send_message(message.from_user.id, 'Извини, но в настоящий момент я только собираю профили.')
+
+
 bot.polling(none_stop=True, interval=0, timeout=2000000000)
-
-"""
-"""
-
-"""
-cost_pp = 31
-cost_umbrl = 25
-cost_hooli = 30
-cost_stark = 39
-cost_wayne = 95
-
-capital_pp = 456794
-capital_umbrl = 637427
-capital_hooli = 559190
-capital_stark = 511246
-capital_wayne = 302670
-
-daily_income_pp = 26942
-daily_income_umbrl = 30248
-daily_income_hooli = 28750
-daily_income_stark = 26639
-daily_income_wayne = 29231
-
-count_actions_pp = capital_pp/cost_pp
-count_actions_umbrl = capital_umbrl/cost_umbrl
-count_actions_hooli = capital_hooli/cost_hooli
-count_actions_stark = capital_stark/cost_stark
-count_actions_wayne = capital_wayne/cost_wayne
-
-dividends_pp = (0.375*daily_income_pp)/count_actions_pp
-dividends_umbrl = (0.375*daily_income_umbrl)/count_actions_umbrl
-dividends_hooli = (0.375*daily_income_hooli)/count_actions_hooli
-dividends_stark = (0.375*daily_income_stark)/count_actions_stark
-dividends_wayne = (0.375*daily_income_wayne)/count_actions_wayne
-
-print ("pp - " + str(dividends_pp))
-print ("umbrella - " + str(dividends_umbrl))
-print ("hooli - " + str(dividends_hooli))
-print ("stark - " + str(dividends_stark))
-print ("wayne - " + str(dividends_wayne))
-"""
