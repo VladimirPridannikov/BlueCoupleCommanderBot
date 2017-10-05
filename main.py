@@ -5,7 +5,7 @@ import sqlite3
 from telebot import types
 
 admin_list = [391545947, 64000151, 121485043, 339824315]
-token = '462200530:AAEdZ9CXigLnRVflYDIN8v8qfjry5D1UCcg'
+token = ''
 bot = telebot.TeleBot(token)
 CWBotID = 326394943
 
